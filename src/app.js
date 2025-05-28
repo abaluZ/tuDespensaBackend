@@ -21,6 +21,11 @@ import tasksRoutes from "./routes/tasks.routes.js";
 import goalRoutes from "./routes/goal.routes.js";
 import informationRoutes from "./routes/information.routes.js";
 import profileRoutes from './routes/profile.routes.js';
+//Veizan --Calorias Aplicación
+import caloriesRoutes from "./routes/calories.routes.js";
+
+app.use("/api", caloriesRoutes);
+
 
 //Cameo -- Web
 import userRoutes from "./routes/users.routes.js";
