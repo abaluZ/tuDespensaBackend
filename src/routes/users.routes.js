@@ -7,8 +7,8 @@ import { getUserProfileApp } from "../controllers/user.controller.js";
 
 const router = Router();
 
-router.get("/profile", authRequired, async (req, res) => {
-    console.log("req.user:", req.user); // <-- Agregado
+// Ruta para la web
+router.get("/users/profile", authRequired, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
@@ -17,7 +17,7 @@ router.get("/profile", authRequired, async (req, res) => {
       id: user._id,
       username: user.username,
       email: user.email,
-      role: user.role, // si tienes roles
+      role: user.role,
     });
   } catch (error) {
     res.status(500).json({ message: "Error al obtener el perfil" });

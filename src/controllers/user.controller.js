@@ -72,28 +72,48 @@ export const updateUser = async (req, res) => {
 // Para poder utilizar en la app movil
 export const getUserProfileApp = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    console.log("Datos del usuario en el token:", req.user);
+    const userId = req.user.id || req.user.userId;
 
+    if (!userId) {
+      console.error("ID de usuario no encontrado en el token");
+      return res.status(401).json({ 
+        message: "ID de usuario no encontrado en el token",
+        user: req.user 
+      });
+    }
+
+    console.log("Buscando usuario con ID:", userId);
     const user = await User.findById(userId);
-    if (!user)
+    if (!user) {
+      console.error("Usuario no encontrado en la base de datos");
       return res.status(404).json({ message: "Usuario no encontrado" });
+    }
 
+    console.log("Usuario encontrado, buscando información adicional...");
     const goal = await UserGoal.findOne({ user: userId });
     const info = await Information.findOne({ user: userId });
 
-    res.json({
+    const response = {
       user: {
         id: user._id,
         username: user.username,
         email: user.email,
         role: user.role,
         plan: user.plan,
+        profilePhoto: user.profilePhoto
       },
       goal,
       information: info,
-    });
+    };
+
+    console.log("Enviando respuesta completa del perfil");
+    res.json(response);
   } catch (error) {
     console.error("Error en getUserProfileApp:", error);
-    res.status(500).json({ message: "Error al obtener el perfil para app" });
+    res.status(500).json({ 
+      message: "Error al obtener el perfil para app",
+      error: error.message 
+    });
   }
 };
