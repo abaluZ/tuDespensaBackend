@@ -20,16 +20,15 @@ import tasksRoutes from "./routes/tasks.routes.js";
 //Segales -- Aplicacion
 import goalRoutes from "./routes/goal.routes.js";
 import informationRoutes from "./routes/information.routes.js";
-import profileRoutes from './routes/profile.routes.js';
+import profileRoutes from "./routes/profile.routes.js";
 import shoppingListRoutes from "./routes/shoppingList.routes.js";
 //Veizan --Calorias Aplicación
 import caloriesRoutes from "./routes/calories.routes.js";
-
+//Reports
+import reportsRoutes from "./routes/reports.routes.js";
 
 //Cameo -- Web
 import userRoutes from "./routes/users.routes.js";
-
-
 
 const app = express();
 
@@ -50,8 +49,6 @@ app.use(
   })
 );
 
-
-
 app.use("/api", authRoutes);
 
 app.use("/api", tasksRoutes); //prueba de validar token y que este logeado el usuario para entrar ahi
@@ -61,14 +58,14 @@ app.use("/api", goalRoutes);
 
 app.use("/api", informationRoutes);
 
-app.use('/api/profile', profileRoutes);
+app.use("/api/profile", profileRoutes);
 
-app.use('/api', shoppingListRoutes);
+app.use("/api", shoppingListRoutes);
 
-app.use('/api', shoppingListRoutes);
+app.use("/api/reports", reportsRoutes);
 
 // ⬇️ Aquí agregamos la carpeta imgsUsr como carpeta estática
-app.use('/imgsUsr', express.static(path.join(__dirname, 'imgsUsr')));
+app.use("/imgsUsr", express.static(path.join(__dirname, "imgsUsr")));
 
 //Cameo -- Web
 app.use("/api", caloriesRoutes);
