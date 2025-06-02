@@ -16,6 +16,7 @@ dotenv.config();
 
 import authRoutes from "./routes/auth.routes.js";
 import tasksRoutes from "./routes/tasks.routes.js";
+import userRoutes from "./routes/users.routes.js";
 
 //Segales -- Aplicacion
 import goalRoutes from "./routes/goal.routes.js";
@@ -24,12 +25,6 @@ import profileRoutes from './routes/profile.routes.js';
 import shoppingListRoutes from "./routes/shoppingList.routes.js";
 //Veizan --Calorias Aplicación
 import caloriesRoutes from "./routes/calories.routes.js";
-
-
-//Cameo -- Web
-import userRoutes from "./routes/users.routes.js";
-
-
 
 const app = express();
 
@@ -41,30 +36,20 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    // juntando los codigos de ambos
-    // origin: process.env.IP_LOCAL_FRONTEND, -- cameo mejor si solo eso usa este, mejor practica
-    // origin: "http://localhost:5173", -- segales
     origin: process.env.IP_LOCAL_FRONTEND || "http://localhost:5173",
-    // origin: "https://frontend-production-29e6.up.railway.app",
     credentials: true,
   })
 );
 
-
-
+// Rutas de autenticación y usuarios
 app.use("/api", authRoutes);
-
-app.use("/api", tasksRoutes); //prueba de validar token y que este logeado el usuario para entrar ahi
+app.use("/api/tasks", tasksRoutes);
+app.use("/api", userRoutes);
 
 // Segales -- Aplicacion
 app.use("/api", goalRoutes);
-
 app.use("/api", informationRoutes);
-
 app.use('/api/profile', profileRoutes);
-
-app.use('/api', shoppingListRoutes);
-
 app.use('/api', shoppingListRoutes);
 
 // ⬇️ Aquí agregamos la carpeta imgsUsr como carpeta estática
