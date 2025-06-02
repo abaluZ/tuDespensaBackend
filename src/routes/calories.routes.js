@@ -1,6 +1,6 @@
 import express from "express";
-import { authRequired } from "../middlewares/validateToken.js";
 import { getCalories } from "../controllers/calories.controller.js";
+import { authRequired } from "../middlewares/validateToken.js";
 
 const router = express.Router();
 

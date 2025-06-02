@@ -65,10 +65,12 @@ app.use('/api/profile', profileRoutes);
 
 app.use('/api', shoppingListRoutes);
 
+app.use('/api', shoppingListRoutes);
+
 // ⬇️ Aquí agregamos la carpeta imgsUsr como carpeta estática
 app.use('/imgsUsr', express.static(path.join(__dirname, 'imgsUsr')));
 
 //Cameo -- Web
-app.use("/api", userRoutes);
+app.use("/api", caloriesRoutes);
 
 export default app;
