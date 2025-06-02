@@ -364,32 +364,48 @@ export const verifyEmail = async (req, res) => {
 // Solicitar código para registro
 export const requestRegisterCode = async (req, res) => {
   const { email } = req.body;
+  console.log("Solicitud de código recibida para:", email);
+  console.log("Variables de entorno EMAIL_USER:", process.env.EMAIL_USER);
 
   try {
     // Verificar si el correo ya está registrado en usuarios reales
     const userExists = await User.findOne({ email });
     if (userExists) {
+      console.log("El correo ya está registrado:", email);
       return res.status(400).json({ message: "Este correo ya está registrado." });
     }
 
     // Generar un código de verificación
-    const verificationCode = generateVerificationCode(); // ejemplo: devuelve "123456"
+    const verificationCode = generateVerificationCode();
+    console.log("Código generado:", verificationCode);
     const verificationExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
 
     // Eliminar registros temporales anteriores si existen
     await TempUser.deleteOne({ email });
 
     // Guardar en la colección temporal
-    const newTempUser = new TempUser({ email, verificationCode, verificationExpires });
+    const newTempUser = new TempUser({ 
+      email, 
+      verificationCode, 
+      verificationExpires 
+    });
     await newTempUser.save();
+    console.log("Usuario temporal guardado:", email);
 
     // Enviar el código por correo
     await sendVerificationEmail(email, verificationCode);
+    console.log("Correo enviado exitosamente a:", email);
 
-    res.status(200).json({ message: "Código de verificación enviado." });
+    res.status(200).json({ 
+      message: "Código de verificación enviado.",
+      email: email
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error al generar el código." });
+    console.error("Error en requestRegisterCode:", error);
+    res.status(500).json({ 
+      message: "Error al generar el código de verificación.",
+      error: error.message 
+    });
   }
 };
 
