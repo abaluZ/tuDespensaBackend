@@ -22,6 +22,7 @@ import goalRoutes from "./routes/goal.routes.js";
 import informationRoutes from "./routes/information.routes.js";
 import profileRoutes from './routes/profile.routes.js';
 import shoppingListRoutes from "./routes/shoppingList.routes.js";
+import despensaRoutes from './routes/despensa.routes.js';
 //Veizan --Calorias Aplicación
 import caloriesRoutes from "./routes/calories.routes.js";
 
@@ -61,11 +62,13 @@ app.use("/api", goalRoutes);
 
 app.use("/api", informationRoutes);
 
-app.use('/api/profile', profileRoutes);
-
 app.use('/api', shoppingListRoutes);
 
 app.use('/api', shoppingListRoutes);
+
+app.use('/api', despensaRoutes);
+
+app.use('/api', userRoutes);
 
 // ⬇️ Aquí agregamos la carpeta imgsUsr como carpeta estática
 app.use('/imgsUsr', express.static(path.join(__dirname, 'imgsUsr')));
