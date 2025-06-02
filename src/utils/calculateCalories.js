@@ -33,8 +33,11 @@ export function calcularCalorias({ edad, peso, estatura, genero, objetivo }) {
     throw new Error('Género no válido. Debe ser masculino o femenino');
   }
 
-  if (!['mantener', 'bajar', 'subir'].includes(objetivoNormalizado)) {
-    throw new Error('Objetivo no válido. Debe ser mantener, bajar o subir');
+  // Normalizamos 'ganar masa muscular' a 'subir'
+  const objetivoCalculos = objetivoNormalizado === 'ganar masa muscular' ? 'subir' : objetivoNormalizado;
+
+  if (!['mantener', 'bajar', 'subir', 'ganar masa muscular'].includes(objetivoNormalizado)) {
+    throw new Error('Objetivo no válido. Debe ser mantener, bajar, subir o ganar masa muscular');
   }
 
   // Cálculo del TMB (Tasa Metabólica Basal) usando la fórmula de Harris-Benedict revisada
@@ -51,9 +54,9 @@ export function calcularCalorias({ edad, peso, estatura, genero, objetivo }) {
 
   // Ajuste según objetivo
   let ajusteCalorias = 0;
-  if (objetivoNormalizado === 'bajar') {
+  if (objetivoCalculos === 'bajar') {
     ajusteCalorias = -500;
-  } else if (objetivoNormalizado === 'subir') {
+  } else if (objetivoCalculos === 'subir') {
     ajusteCalorias = 500;
   }
 

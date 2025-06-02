@@ -4,20 +4,19 @@ import jwt from 'jsonwebtoken';
 import { TOKEN_SECRET } from "../config.js";
 
 export const authRequired = (req, res, next) => {
-  // Intenta obtener el token desde el header o desde cookies
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.startsWith('Bearer ')
-    ? authHeader.split(' ')[1]
-    : req.cookies.token;
+  // Obtener el token del header Authorization o de las cookies
+  const authHeader = req.headers['authorization'];
+  const token = authHeader ? authHeader.split(' ')[1] : req.cookies.token;
 
   if (!token) {
-    return res.status(401).json({ message: 'No token, authorization denied' });
+    return res.status(401).json({ message: "No token, autorización denegada" });
   }
 
-  jwt.verify(token, TOKEN_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: 'Invalid token' });
-
-    req.user = user;
+  try {
+    const decoded = jwt.verify(token, TOKEN_SECRET);
+    req.user = decoded;
     next();
-  });
+  } catch (error) {
+    return res.status(401).json({ message: "Token inválido" });
+  }
 };
