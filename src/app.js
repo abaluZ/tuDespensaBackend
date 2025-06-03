@@ -33,6 +33,7 @@ import userRoutes from "./routes/users.routes.js";
 const app = express();
 
 //Cameo -- Web
+app.use("/api", userRoutes);
 console.log("frontend URL:", process.env.IP_LOCAL_FRONTEND);
 
 app.use(morgan("dev"));

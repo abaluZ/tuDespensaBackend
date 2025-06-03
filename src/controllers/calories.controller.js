@@ -10,16 +10,16 @@ export const getCalories = async (req, res) => {
     const goal = await goalModel.findOne({ user: userId });
 
     if (!info) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         message: "No se encontró la información del usuario",
-        details: "Por favor, complete su información personal primero"
+        details: "Por favor, complete su información personal primero",
       });
     }
 
     if (!goal) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         message: "No se encontró el objetivo del usuario",
-        details: "Por favor, establezca su objetivo primero"
+        details: "Por favor, establezca su objetivo primero",
       });
     }
 
@@ -33,16 +33,19 @@ export const getCalories = async (req, res) => {
 
     // Convertir objetivo a formato esperado
     let objetivoNormalizado = goal.goal.toLowerCase();
-    if (objetivoNormalizado === 'bajar de peso') objetivoNormalizado = 'bajar';
-    if (objetivoNormalizado === 'subir de peso') objetivoNormalizado = 'subir';
-    if (objetivoNormalizado === 'mantener peso') objetivoNormalizado = 'mantener';
+    if (objetivoNormalizado === "bajar de peso") objetivoNormalizado = "bajar";
+    if (objetivoNormalizado === "subir de peso") objetivoNormalizado = "subir";
+    if (objetivoNormalizado === "mantener peso")
+      objetivoNormalizado = "mantener";
+    if (objetivoNormalizado === "ganar masa muscular")
+      objetivoNormalizado = "subir";
 
     const datosConvertidos = {
       edad: edad,
       peso: Number(info.Peso),
       estatura: estaturaCm,
       genero: info.Genero,
-      objetivo: objetivoNormalizado
+      objetivo: objetivoNormalizado,
     };
 
     console.log("Valores convertidos para el cálculo:");
@@ -59,29 +62,29 @@ export const getCalories = async (req, res) => {
           peso: info.Peso,
           estatura: info.Estatura,
           genero: info.Genero,
-          objetivo: goal.goal
-        }
-      }
+          objetivo: goal.goal,
+        },
+      },
     });
-
   } catch (error) {
     console.error("Error al calcular las calorías:", error);
-    
-    if (error.message && (
-      error.message.includes('válido') || 
-      error.message.includes('requeridos') ||
-      error.message.includes('debe estar entre') ||
-      error.message.includes('valores numéricos')
-    )) {
-      return res.status(400).json({ 
+
+    if (
+      error.message &&
+      (error.message.includes("válido") ||
+        error.message.includes("requeridos") ||
+        error.message.includes("debe estar entre") ||
+        error.message.includes("valores numéricos"))
+    ) {
+      return res.status(400).json({
         message: "Error en los datos proporcionados",
-        error: error.message
+        error: error.message,
       });
     }
 
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Error interno al calcular las calorías",
-      error: "Por favor, contacte al administrador del sistema"
+      error: "Por favor, contacte al administrador del sistema",
     });
   }
 };
