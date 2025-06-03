@@ -51,7 +51,11 @@ app.use("/api", userRoutes);
 app.use("/api", goalRoutes);
 app.use("/api", informationRoutes);
 app.use('/api/profile', profileRoutes);
+
 app.use('/api', shoppingListRoutes);
+
+app.use('/api', despensaRoutes);
+
 
 // ⬇️ Aquí agregamos la carpeta imgsUsr como carpeta estática
 app.use('/imgsUsr', express.static(path.join(__dirname, 'imgsUsr')));
