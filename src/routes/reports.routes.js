@@ -5,6 +5,9 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import { authRequired } from "../middlewares/validateToken.js";
+import { User } from "../models/user.model.js";
+import { information } from "../models/information.model.js";
+import userGoal from "../models/goal.model.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -16,10 +19,10 @@ const router = express.Router();
  * @description Generate and download a PDF report for the authenticated user
  * @access Private
  */
-router.get("/user-report", authRequired, async (req, res) => {
+const generateReport = async (req, res) => {
   try {
     // Get user data from the authenticated request
-    const user = req.user.id;
+    const userId = req.user.userId;
 
     // Create reports directory if it doesn't exist
     const reportsDir = path.join(__dirname, "../..", "reports");
@@ -28,19 +31,35 @@ router.get("/user-report", authRequired, async (req, res) => {
     }
 
     // Generate unique filename
-    const filename = `user-report-${user}-${Date.now()}.pdf`;
+    const filename = `user-report-${userId}-${Date.now()}.pdf`;
     const outputPath = path.join(reportsDir, filename);
 
-    // Get user data from database
-    // Asumiendo que tienes un modelo de Usuario, ajusta según tu implementación
-    const userData = await req.app
-      .get("db")
-      .collection("users")
-      .findOne({ _id: user });
-
-    if (!userData) {
+    // Get user data using Mongoose models
+    const user = await User.findById(userId);
+    if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
+
+    const userInfo = await information.findOne({ user: userId });
+    const userGoalInfo = await userGoal.findOne({ user: userId });
+
+    if (!userInfo) {
+      return res
+        .status(404)
+        .json({ message: "Información del usuario no encontrada" });
+    }
+
+    // Prepare data for PDF generation
+    const userData = {
+      username: user.username,
+      email: user.email,
+      fullName: `${userInfo.Nombre} ${userInfo.Apellidos}`,
+      gender: userInfo.Genero,
+      height: userInfo.Estatura,
+      weight: userInfo.Peso,
+      age: userInfo.Edad,
+      goal: userGoalInfo ? userGoalInfo.goal : "No definido",
+    };
 
     // Generate PDF
     await generateUserReport(userData, outputPath);
@@ -64,6 +83,12 @@ router.get("/user-report", authRequired, async (req, res) => {
     console.error("Error generating report:", error);
     res.status(500).json({ message: "Error generando el informe" });
   }
-});
+};
+
+// Ruta original
+router.get("/user-report", authRequired, generateReport);
+
+// Alias para mantener compatibilidad
+router.get("/generate", authRequired, generateReport);
 
 export default router;
