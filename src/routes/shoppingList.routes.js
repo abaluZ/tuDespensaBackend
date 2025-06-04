@@ -10,8 +10,8 @@ import {
 
 const router = Router();
 
-router.post("/shopping-list", authRequired, createOrUpdateShoppingList);
-router.get("/shopping-list", authRequired, getShoppingList);
-router.get("/shopping-list/history", authRequired, getShoppingListHistory);
+router.post("/shopping/list", authRequired, createOrUpdateShoppingList);
+router.get("/shopping/list", authRequired, getShoppingList);
+router.get("/shopping/history", authRequired, getShoppingListHistory);
 
 export default router;

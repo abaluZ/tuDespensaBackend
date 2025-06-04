@@ -3,24 +3,41 @@ import { generateShoppingReport } from "../utils/shoppingReportGenerator.js";
 
 export const getMostBoughtProducts = async (req, res) => {
   const userId = req.user.userId;
-  const { startDate, endDate, limit = 10 } = req.query;
+  const { startDate, endDate, limit = 10, format } = req.query;
 
   try {
     // Construir el filtro de fechas
     const dateFilter = {
       user: userId,
-      fechaCompletado: {},
+      completada: true,
+      fechaCompletado: {
+        $exists: true
+      }
     };
 
     if (startDate) {
-      dateFilter.fechaCompletado.$gte = new Date(startDate);
+      dateFilter.fechaCompletado.$gte = new Date(startDate + 'T00:00:00.000Z');
     }
     if (endDate) {
-      dateFilter.fechaCompletado.$lte = new Date(endDate);
+      dateFilter.fechaCompletado.$lte = new Date(endDate + 'T23:59:59.999Z');
     }
 
     // Obtener todas las listas completadas en el rango de fechas
     const historial = await ShoppingListHistory.find(dateFilter);
+
+    if (historial.length === 0) {
+      return res.json({
+        productos: [],
+        estadisticas: {
+          totalListas: 0,
+          periodoAnalisis: {
+            inicio: startDate ? new Date(startDate) : null,
+            fin: endDate ? new Date(endDate) : null
+          },
+          totalProductosUnicos: 0
+        }
+      });
+    }
 
     // Objeto para almacenar las estadísticas de productos
     const productStats = {};
@@ -28,31 +45,37 @@ export const getMostBoughtProducts = async (req, res) => {
     // Procesar cada lista del historial
     historial.forEach((lista) => {
       lista.items.forEach((item) => {
-        if (!productStats[item.nombre]) {
-          productStats[item.nombre] = {
-            nombre: item.nombre,
-            cantidadTotal: 0,
-            vecesComprado: 0,
-            categorias: new Set(),
-            unidades: new Set(),
-            fechasCompra: [],
-            promedioUnidades: 0,
-          };
-        }
+        // Solo considerar items que fueron marcados como comprados
+        if (item.comprado) {
+          const key = item.nombre.toLowerCase(); // Normalizar el nombre para evitar duplicados por mayúsculas/minúsculas
+          if (!productStats[key]) {
+            productStats[key] = {
+              nombre: item.nombre,
+              cantidadTotal: 0,
+              vecesComprado: 0,
+              categorias: new Set(),
+              unidades: new Set(),
+              fechasCompra: [],
+              promedioUnidades: 0,
+            };
+          }
 
-        const stats = productStats[item.nombre];
-        stats.cantidadTotal += item.cantidad;
-        stats.vecesComprado += 1;
-        stats.categorias.add(item.categoria);
-        stats.unidades.add(item.unidad);
-        stats.fechasCompra.push(lista.fechaCompletado);
+          const stats = productStats[key];
+          stats.cantidadTotal += Number(item.cantidad) || 0; // Asegurarse de que la cantidad sea un número
+          stats.vecesComprado += 1;
+          stats.categorias.add(item.categoria);
+          stats.unidades.add(item.unidad);
+          stats.fechasCompra.push(lista.fechaCompletado);
+        }
       });
     });
 
     // Convertir las estadísticas a un array y calcular promedios
     const productsArray = Object.values(productStats).map((stats) => ({
-      ...stats,
-      promedioUnidades: stats.cantidadTotal / stats.vecesComprado,
+      nombre: stats.nombre,
+      cantidadTotal: stats.cantidadTotal,
+      vecesComprado: stats.vecesComprado,
+      promedioUnidades: Number((stats.cantidadTotal / stats.vecesComprado).toFixed(2)),
       categorias: Array.from(stats.categorias),
       unidades: Array.from(stats.unidades),
       fechasCompra: stats.fechasCompra.sort((a, b) => b - a),
@@ -74,14 +97,22 @@ export const getMostBoughtProducts = async (req, res) => {
         : Math.max(...historial.map((h) => h.fechaCompletado)),
     };
 
-    res.json({
+    const reportData = {
       productos: sortedProducts,
       estadisticas: {
         totalListas,
         periodoAnalisis,
         totalProductosUnicos: productsArray.length,
-      },
-    });
+      }
+    };
+
+    // Si se solicita formato PDF, generar y enviar el PDF
+    if (format === 'pdf') {
+      return await generateShoppingReport(reportData, res);
+    }
+
+    // Si no se solicita PDF, enviar JSON
+    res.json(reportData);
   } catch (error) {
     console.error("Error al generar reporte de productos:", error);
     res.status(500).json({

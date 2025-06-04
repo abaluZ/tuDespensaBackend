@@ -25,7 +25,6 @@ import profileRoutes from "./routes/profile.routes.js";
 import shoppingListRoutes from "./routes/shoppingList.routes.js";
 import despensaRoutes from "./routes/despensa.routes.js";
 import shoppingHistoryRoutes from "./routes/shoppingHistory.routes.js";
-import despensaRoutes from './routes/despensa.routes.js';
 import dietRoutes from './routes/diet.routes.js';
 import recipeRoutes from './routes/recipe.routes.js';
 //Veizan --Calorias Aplicación
@@ -60,31 +59,19 @@ app.use("/api/tasks", tasksRoutes);
 // Segales -- Aplicacion
 app.use("/api", goalRoutes);
 app.use("/api", informationRoutes);
-
 app.use("/api/profile", profileRoutes);
-
 app.use("/api", shoppingListRoutes);
-
 app.use("/api/reports", reportsRoutes);
-
 app.use("/api", despensaRoutes);
-
 app.use("/api/shopping-history", shoppingHistoryRoutes);
-
-app.use("/api/profile", profileRoutes);
-app.use("/api", shoppingListRoutes);
-app.use("/api/reports", reportsRoutes);
-app.use('/api', despensaRoutes);
 app.use('/api', dietRoutes);
 app.use('/api', recipeRoutes);
-
 
 // ⬇️ Aquí agregamos la carpeta imgsUsr como carpeta estática
 app.use("/imgsUsr", express.static(path.join(__dirname, "imgsUsr")));
 
 //Cameo -- Web
 app.use("/api", caloriesRoutes);
-
-app.use("/api/reports/shopping", shoppingReportsRoutes);
+app.use("/api/shopping/reports", shoppingReportsRoutes);
 
 export default app;
