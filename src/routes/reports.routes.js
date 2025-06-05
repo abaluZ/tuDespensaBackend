@@ -49,6 +49,17 @@ const generateReport = async (req, res) => {
         .json({ message: "Información del usuario no encontrada" });
     }
 
+    // Calcular la edad a partir de la fecha de nacimiento
+    const fechaNacimiento = new Date(userInfo.Edad);
+    const hoy = new Date();
+    const calculatedAge = hoy.getFullYear() - fechaNacimiento.getFullYear();
+
+    // Normalizar el objetivo
+    let objetivoNormalizado = userGoalInfo ? userGoalInfo.goal.toLowerCase() : "mantener";
+    if (objetivoNormalizado === "bajar de peso") objetivoNormalizado = "bajar";
+    if (objetivoNormalizado === "subir de peso") objetivoNormalizado = "subir";
+    if (objetivoNormalizado === "mantener peso") objetivoNormalizado = "mantener";
+
     // Prepare data for PDF generation
     const userData = {
       username: user.username,
@@ -57,8 +68,8 @@ const generateReport = async (req, res) => {
       gender: userInfo.Genero,
       height: userInfo.Estatura,
       weight: userInfo.Peso,
-      age: userInfo.Edad,
-      goal: userGoalInfo ? userGoalInfo.goal : "No definido",
+      calculatedAge: calculatedAge,
+      goal: objetivoNormalizado
     };
 
     // Generate PDF
