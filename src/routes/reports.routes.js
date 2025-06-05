@@ -8,6 +8,7 @@ import { authRequired } from "../middlewares/validateToken.js";
 import { User } from "../models/user.model.js";
 import { information } from "../models/information.model.js";
 import userGoal from "../models/goal.model.js";
+import Diet from "../models/diet.model.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -42,6 +43,7 @@ const generateReport = async (req, res) => {
 
     const userInfo = await information.findOne({ user: userId });
     const userGoalInfo = await userGoal.findOne({ user: userId });
+    const userDiet = await Diet.findOne({ user: userId });
 
     if (!userInfo) {
       return res
@@ -69,7 +71,8 @@ const generateReport = async (req, res) => {
       height: userInfo.Estatura,
       weight: userInfo.Peso,
       calculatedAge: calculatedAge,
-      goal: objetivoNormalizado
+      goal: objetivoNormalizado,
+      type_diet: userDiet ? userDiet.type_diet : null
     };
 
     // Generate PDF
