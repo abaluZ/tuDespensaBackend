@@ -134,7 +134,8 @@ export const getRecipeRecommendations = async (req, res) => {
         const prompt = `Actúa como un chef experto y nutricionista. Necesito recomendaciones de ${tipo_comida} basadas en la siguiente información:
 
         Perfil del Usuario:
-        - Tipo de Dieta: ${userDiet.type_diet}
+        - Tipo de Dieta: ${userDiet.type_diet.toUpperCase()}
+        ${getDietaryInstructions(userDiet.type_diet)}
         - Objetivo: ${userGoalInfo.goal}
         - Edad: ${userInfo.Edad}
         - Peso: ${userInfo.Peso} kg
@@ -151,7 +152,7 @@ export const getRecipeRecommendations = async (req, res) => {
 
         Las recetas deben:
         1. Ser apropiadas para ${tipo_comida}
-        2. Ajustarse a su tipo de dieta
+        2. Cumplir ESTRICTAMENTE con las restricciones de la dieta ${userDiet.type_diet.toUpperCase()}
         3. Ayudar a alcanzar su objetivo
         4. Aproximarse a las calorías objetivo para este tiempo de comida
         5. Ser nutritivas y balanceadas
@@ -238,5 +239,22 @@ export const getRecipeRecommendations = async (req, res) => {
             message: "Error al generar recomendaciones de recetas", 
             error: error.message 
         });
+    }
+};
+
+// Función auxiliar para obtener instrucciones según la dieta
+const getDietaryInstructions = (tipoDieta) => {
+    switch (tipoDieta.toLowerCase()) {
+        case 'vegano':
+            return `- Restricciones: NO incluir NINGÚN producto de origen animal (carne, pescado, huevos, lácteos, miel)
+        - Enfoque: Usar alternativas vegetales para proteínas como legumbres, tofu, tempeh, etc.`;
+        case 'vegetariano':
+            return `- Restricciones: NO incluir carne ni pescado
+        - Permitido: Huevos, lácteos y todos los productos vegetales`;
+        case 'estandar':
+        default:
+            return `- Sin restricciones específicas
+        - Incluir una variedad balanceada de todos los grupos alimenticios
+        - Se pueden usar carnes, pescados, huevos, lácteos y todos los productos vegetales`;
     }
 }; 
