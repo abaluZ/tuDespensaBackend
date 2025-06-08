@@ -1,4 +1,3 @@
-// Codigo realizado por el equipo
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Diet from "../models/diet.model.js";
 import { information } from "../models/information.model.js";

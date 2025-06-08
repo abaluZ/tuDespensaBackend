@@ -63,9 +63,9 @@ export function calcularCalorias({ edad, peso, estatura, genero, objetivo }) {
   caloriasDiarias += ajusteCalorias;
 
   // Cálculo de macronutrientes recomendados
-  const proteinas = Math.round((caloriasDiarias * 0.25) / 4); // 25% de proteínas (4 cal/g)
-  const grasas = Math.round((caloriasDiarias * 0.25) / 9);    // 25% de grasas (9 cal/g)
-  const carbohidratos = Math.round((caloriasDiarias * 0.50) / 4); // 50% de carbohidratos (4 cal/g)
+  const proteinas = Math.round((caloriasDiarias * 0.25) / 4); 
+  const grasas = Math.round((caloriasDiarias * 0.25) / 9);    
+  const carbohidratos = Math.round((caloriasDiarias * 0.50) / 4);
 
   return {
     caloriasDiarias: Math.round(caloriasDiarias),
