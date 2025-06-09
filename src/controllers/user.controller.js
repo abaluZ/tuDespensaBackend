@@ -117,3 +117,39 @@ export const getUserProfileApp = async (req, res) => {
     });
   }
 };
+
+export const upgradeToPremium = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'No autenticado' });
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    user.plan = 'Premium';
+    await user.save();
+    res.json({ message: 'Usuario actualizado a Premium', user });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al actualizar a Premium', error: error.message });
+  }
+};
+
+export const downgradeToFree = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'No autenticado' });
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    user.plan = 'Gratuito';
+    await user.save();
+    res.json({ message: 'Suscripción cancelada. Ahora eres usuario gratuito.', user });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al cancelar suscripción', error: error.message });
+  }
+};

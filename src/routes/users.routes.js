@@ -3,7 +3,7 @@
 import { Router } from "express";
 import { authRequired } from "../middlewares/validateToken.js";
 import { User } from "../models/user.model.js";
-import { getUserProfileApp } from "../controllers/user.controller.js";
+import { getUserProfileApp, upgradeToPremium, downgradeToFree } from "../controllers/user.controller.js";
 
 const router = Router();
 
@@ -26,5 +26,11 @@ router.get("/users/profile", authRequired, async (req, res) => {
 
 // Ruta para la app móvil
 router.get("/profileApp", authRequired, getUserProfileApp);
+
+// Ruta para actualizar el plan del usuario a Premium
+router.put("/users/upgrade-plan", authRequired, upgradeToPremium);
+
+// Ruta para cancelar suscripción y volver a gratuito
+router.put("/users/downgrade-plan", authRequired, downgradeToFree);
 
 export default router;
