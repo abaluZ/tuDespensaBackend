@@ -5,6 +5,7 @@ import userGoal from "../models/goal.model.js";
 import Despensa from "../models/despensa.model.js";
 import dotenv from "dotenv";
 import { calcularCalorias } from "../utils/calculateCalories.js";
+import RecipeHistory from "../models/recipeHistory.model.js";
 
 dotenv.config();
 
@@ -207,21 +208,112 @@ export const getRecipeRecommendations = async (req, res) => {
             const response = result.response;
             const text = response.text();
 
+            // Log del texto recibido de Gemini
+            console.log("Texto recibido de Gemini:", text);
+
             // Intentar parsear la respuesta como JSON
             let recipes;
             try {
                 recipes = JSON.parse(text);
                 console.log("Respuesta parseada correctamente como JSON");
             } catch (error) {
-                console.log("No se pudo parsear como JSON, usando texto plano");
-                recipes = { text: text };
+                // Intentar extraer el bloque JSON del texto
+                const firstBrace = text.indexOf('{');
+                const lastBrace = text.lastIndexOf('}');
+                if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+                    const possibleJson = text.substring(firstBrace, lastBrace + 1);
+                    try {
+                        recipes = JSON.parse(possibleJson);
+                        console.log("Respuesta extraída y parseada como JSON");
+                    } catch (e2) {
+                        console.log("No se pudo parsear como JSON, usando texto plano");
+                        recipes = { text: text };
+                    }
+                } else {
+                    console.log("No se pudo parsear como JSON, usando texto plano");
+                    recipes = { text: text };
+                }
             }
 
+            // GUARDAR EN HISTORIAL
+            console.log("tipo_comida recibido:", tipo_comida);
+            if (recipes.recetas_con_ingredientes_disponibles || recipes.recetas_con_complementos) {
+                const recetasAGuardar = [];
+                if (Array.isArray(recipes.recetas_con_ingredientes_disponibles)) {
+                    recipes.recetas_con_ingredientes_disponibles.forEach(r => {
+                        recetasAGuardar.push({
+                            nombre: r.nombre,
+                            ingredientes: r.ingredientes,
+                            preparacion: r.preparacion,
+                            tiempo_preparacion: r.tiempo_preparacion,
+                            informacion_nutricional: r.informacion_nutricional,
+                            beneficios: r.beneficios,
+                            fecha_generada: new Date(),
+                        });
+                    });
+                }
+                if (Array.isArray(recipes.recetas_con_complementos)) {
+                    recipes.recetas_con_complementos.forEach(r => {
+                        recetasAGuardar.push({
+                            nombre: r.nombre,
+                            ingredientes_disponibles: r.ingredientes_disponibles,
+                            ingredientes_a_comprar: r.ingredientes_a_comprar,
+                            preparacion: r.preparacion,
+                            tiempo_preparacion: r.tiempo_preparacion,
+                            informacion_nutricional: r.informacion_nutricional,
+                            beneficios: r.beneficios,
+                            fecha_generada: new Date(),
+                        });
+                    });
+                }
+                console.log("Intentando guardar recetas en historial", { userId, tipo_comida, recetasAGuardar });
+                // Buscar historial existente para este usuario y tipo de comida
+                let historial = await RecipeHistory.findOne({ user: userId, tipo_comida });
+                if (!historial) {
+                    historial = new RecipeHistory({ user: userId, tipo_comida, recetas: [] });
+                }
+                // Agregar nuevas recetas al principio
+                historial.recetas = [...recetasAGuardar, ...historial.recetas];
+                // Limitar a 8 recetas
+                if (historial.recetas.length > 8) {
+                    historial.recetas = historial.recetas.slice(0, 8);
+                }
+                try {
+                    await historial.save();
+                    console.log("Historial guardado correctamente", historial);
+                } catch (err) {
+                    console.error("Error al guardar historial de recetas:", err);
+                }
+            }
+            // FIN GUARDADO HISTORIAL
+
+            // Validar estructura de recipes antes de responder
+            let recetasDisponibles = [];
+            let recetasComplementos = [];
+            if (recipes && typeof recipes === 'object') {
+                if (Array.isArray(recipes.recetas_con_ingredientes_disponibles)) {
+                    recetasDisponibles = recipes.recetas_con_ingredientes_disponibles;
+                }
+                if (Array.isArray(recipes.recetas_con_complementos)) {
+                    recetasComplementos = recipes.recetas_con_complementos;
+                }
+            }
+            // Si ambas están vacías y el parseo falló, devolver error
+            if (recetasDisponibles.length === 0 && recetasComplementos.length === 0) {
+                return res.status(500).json({
+                    message: "No se pudo obtener una respuesta válida de la IA. Intenta nuevamente.",
+                    error: "Formato de respuesta inválido de Gemini"
+                });
+            }
+            // Responder siempre con la misma estructura
             res.json({
                 message: "Recomendaciones generadas exitosamente",
                 tipo_comida: tipo_comida,
                 calorias_objetivo: caloriasTipoComida,
-                recipes: recipes
+                recipes: {
+                    recetas_con_ingredientes_disponibles: recetasDisponibles,
+                    recetas_con_complementos: recetasComplementos
+                }
             });
         } catch (error) {
             console.error("Error específico de Gemini:", error);
